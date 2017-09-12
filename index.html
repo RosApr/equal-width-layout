@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>等宽布局</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .media-thumbnail-container img {
+            -webkit-transition: all .3s ease-out;
+            transition: all .3s ease-out;
+            -webkit-transform-origin: center center;
+            -ms-transform-origin: center center;
+            transform-origin: center center;
+            width: 100%;
+        }
+        .media-thumbnail-container {
+            display: inline-block;
+            float: left;
+            overflow: hidden;
+        }
+        .clearfix:before,
+        .clearfix:after {
+            content: " ";
+            display: table;
+        }
+        .clearfix:after {
+            clear: both;
+        }
+        .container {
+            width: 80%;
+            margin: 200px auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container clearfix" id="mediaListContainer">
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_1.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_2.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_3.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_4.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_5.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_5.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_6.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_7.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_8.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_9.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_10.jpg" alt=""></span>
+    </a>
+    <a href="javascript:;" class="media-thumbnail-container">
+        <span><img src="./src/images/tt_11.jpg" alt=""></span>
+    </a>
+</div>
+</body>
+<script type="text/javascript" src="./src/js/jquery.min.js"></script>
+<script type="text/javascript" src="./src/js/imagesloaded.pkgd.min.js"></script>
+<script type="text/javascript" src="./src/js/underscore-min.js"></script>
+<script type="text/javascript">
+        $(function(){
+           var isMobile = (function(){
+                if(/AppleWebKit.*Mobile/i.test(navigator.userAgent) || (/MIDP|SymbianOS|NOKIA|SAMSUNG|LG|NEC|TCL|Alcatel|BIRD|DBTEL|Dopod|PHILIPS|HAIER|LENOVO|MOT-|Nokia|SonyEricsson|SIE-|Amoi|ZTE/.test(navigator.userAgent))) {
+                    return isMobile = true;
+                }else{
+                    return isMobile = false;
+                }
+            })();
+            var TOTALWIDTH = $("#mediaListContainer").outerWidth();
+            var imgA = [];
+            var _a;
+            $('#mediaListContainer').imagesLoaded(function(instance) {
+                var $imgList = instance.images.map(function(e, index){
+                    return $(e["img"]).closest(".media-thumbnail-container");
+                });
+                imgA = $imgList;
+                setHeightEqual($imgList, 200);
+                var perCount = isMobile ? 4 : 7;
+                var arrList = seperateArray($imgList, perCount);
+                 _.each(arrList, function(ele, index, list){
+                    _multipleWidth(ele, TOTALWIDTH);
+                 });
+            });
+            function setHeightEqual(arr, defaultHeight){
+                var defaultHeight = defaultHeight || 300;
+                for(var i = 0, len = arr.length; i < len; i++) {
+                    var currentImg = $(arr[i]);
+                    var height = $(arr[i]).outerHeight();
+                    var _w = ($(arr[i]).outerWidth() / height) * defaultHeight;
+                    currentImg.attr("data-w", _w).attr("data-h", defaultHeight);
+                }
+            }
+            //按照指定长度分割数组，并当分割后的最后一个数组长度小于指定长度时，将其合并到倒数第二个数组并删除长度不够的数组
+            function seperateArray(arr, len){
+                if(arr.length === 0) return false;
+                var lists = _.chain(arr)
+                    .groupBy(function(element, index){
+                        return Math.floor(index/len);
+                    })
+                    .toArray()
+                    .value();
+                var arrLength = lists.length;
+                if(lists[arrLength - 1].length <= (Math.floor(len/2)) && arrLength > 1){
+                    lists[arrLength - 2] = lists[arrLength - 2].concat(_.last(lists));
+                    lists.splice(-1,1);
+                }
+                return lists;
+            }
+            function _multipleWidth(arr, totalWidth) {
+                totalWidth = totalWidth || TOTALWIDTH;
+                var _width = 0;
+                var baseHeight;
+                var status = 0;
+                for(var i = 0, len = arr.length; i < len; i++) {
+                    var currentImg = $(arr[i]);
+                    var height = +$(arr[i]).attr("data-h");
+                    _width += +currentImg.attr("data-w");
+                    baseHeight = totalWidth / _width * height;
+                }
+                status = totalWidth - _width < 0;
+                sizeImg(arr, baseHeight);
+            }
+            // function multipleWidth(arr, TOTALWIDTH){
+            //     var _width = 0;
+            //     var endPos = 0;
+            //     for(var i = 0, len = arr.length; i < len; i++) {
+            //         var currentImg = $(arr[i]);
+            //         var height = +$(arr[i]).attr("data-h");
+            //         _width += +currentImg.attr("data-w");
+            //         if(_width > TOTALWIDTH){
+            //             endPos = i+1;
+            //             var baseHeight = TOTALWIDTH / _width * height;
+            //             var _arr = arr.slice(0, endPos);
+            //             sizeImg(_arr, baseHeight);
+            //             var nextArr = arr.slice(endPos);
+            //             return multipleWidth(nextArr, TOTALWIDTH);
+            //         }
+            //     }
+            //     return arr;
+            // }
+            function sizeImg(imgArr, baseHeight, status){
+                var status = (status || 1) === 1 ? true : false;
+                var len = imgArr.length - 1;
+                imgArr.forEach(function(e, index){
+                    var _width = +$(e).attr("data-w"), _height = +$(e).attr("data-h");
+                    var hPercent = baseHeight / _height;
+                    var calculateWdith = _width * hPercent;
+                    $(e).closest("a").css({
+                        "width": calculateWdith,
+                        "height": baseHeight
+                    });
+                    if((index === len) && status){
+                        $(e)
+                            .closest("a")
+                            .css({
+                                "width": calculateWdith-1
+                            })
+                            .attr("data-pos", true);
+                    }
+                });
+            }
+    });
+</script>
+</html>
